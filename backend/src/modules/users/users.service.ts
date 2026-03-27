@@ -12,7 +12,11 @@ export class UsersService {
   ) {}
 
   async findAll() {
-    return this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany();
+
+    const safeUsers = users.map(({ password, ...user }) => user);
+
+    return safeUsers;
   }
 
   async findById(id: string) {

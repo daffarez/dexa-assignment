@@ -6,6 +6,7 @@ export const RegisterSchema = z.object({
   password: z.string().min(6),
   phone: z.string().optional(),
   photoUrl: z.string().optional(),
+  role: z.enum(['EMPLOYEE', 'ADMIN']),
 });
 
 export const LoginSchema = z.object({
