@@ -1,10 +1,14 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 import * as amqp from 'amqplib';
 
 @Injectable()
 export class LogsService implements OnModuleInit {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gateway: NotificationsGateway,
+  ) {}
 
   async onModuleInit() {
     await this.consume();
@@ -25,6 +29,8 @@ export class LogsService implements OnModuleInit {
         await this.prisma.activityLog.create({
           data: payload,
         });
+
+        this.gateway.sendToAdmin('activity', payload);
 
         channel.ack(msg);
       }
