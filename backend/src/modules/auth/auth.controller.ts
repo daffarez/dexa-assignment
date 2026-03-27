@@ -1,4 +1,10 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   type LoginPayload,
@@ -18,6 +24,7 @@ export class AuthController {
     return this.authService.register(parsedBody);
   }
 
+  @HttpCode(200)
   @Post('login')
   login(@Body() body: LoginPayload) {
     const parsedBody = validatePayload(LoginSchema, body);
