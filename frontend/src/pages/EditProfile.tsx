@@ -12,7 +12,6 @@ import {
   UserCircle,
   Loader2,
   CheckCircle2,
-  Briefcase,
 } from "lucide-react";
 
 export default function EditProfile() {
@@ -83,18 +82,17 @@ export default function EditProfile() {
       }
 
       const payload: any = {
-        name: form.name,
         phone: form.phone,
-        position: form.position,
         photoUrl: finalPhotoUrl,
       };
 
       if (form.password) payload.password = form.password;
 
-      await updateProfile(payload);
+      const response = await updateProfile(payload);
 
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const updatedUser = { ...currentUser, ...payload };
+      const updatedUser = { ...currentUser, ...response.data };
+
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
       setStatus({ type: "success", msg: "Profil berhasil diperbarui!" });
@@ -111,7 +109,6 @@ export default function EditProfile() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-12">
-      {/* Container Utama - Diperlebar ke max-w-5xl (1024px) agar lega di Web */}
       <div className="max-w-7xl mx-auto">
         {/* Navigasi Atas */}
         <div className="flex justify-between items-center mb-8">
@@ -126,9 +123,8 @@ export default function EditProfile() {
           </h2>
         </div>
 
-        {/* Layout Grid: 2 Kolom di Layar Lebar (lg), 1 Kolom di Mobile */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* KOLOM KIRI: Foto & Status (Makan 4 bagian dari 12) */}
+          {/* KOLOM KIRI: Profile Card */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center text-center">
               <div className="relative group mb-6">
@@ -156,14 +152,12 @@ export default function EditProfile() {
                 </label>
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900">
-                {form.name || "User Name"}
-              </h3>
+              <h3 className="text-xl font-bold text-gray-900">{form.name}</h3>
               <p className="text-sm text-gray-500 font-medium mb-4">
-                {form.position || "Karyawan"}
+                {form.position}
               </p>
 
-              <div className="w-full pt-6 border-t border-gray-50 space-y-3">
+              <div className="w-full pt-6 border-t border-gray-50">
                 <div className="flex items-center gap-3 text-xs text-gray-400 font-bold uppercase tracking-widest justify-center">
                   <CheckCircle2 size={14} className="text-green-500" /> Profil
                   Terverifikasi
@@ -171,7 +165,6 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* Alert Message Box */}
             {status.msg && (
               <div
                 className={`p-4 rounded-2xl border flex items-center gap-3 ${
@@ -185,7 +178,7 @@ export default function EditProfile() {
             )}
           </div>
 
-          {/* KOLOM KANAN: Form Detail (Makan 8 bagian dari 12) */}
+          {/* KOLOM KANAN: Form */}
           <div className="lg:col-span-8">
             <form
               onSubmit={handleSubmit}
@@ -193,11 +186,11 @@ export default function EditProfile() {
             >
               <div>
                 <h4 className="text-lg font-bold text-gray-900 mb-6">
-                  Informasi Dasar
+                  Informasi Karyawan
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Field Nama */}
-                  <div className="space-y-2">
+                  {/* NAMA (READ ONLY) */}
+                  <div className="space-y-2 opacity-70">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                       Nama Lengkap
                     </label>
@@ -207,29 +200,28 @@ export default function EditProfile() {
                         size={18}
                       />
                       <input
-                        name="name"
                         value={form.name}
-                        onChange={handleChange}
-                        className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium"
+                        readOnly
+                        className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-transparent rounded-xl font-medium cursor-not-allowed"
                       />
                     </div>
                   </div>
 
-                  {/* Field Telepon */}
+                  {/* WHATSAPP (EDITABLE) */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-blue-600">
                       Nomor WhatsApp
                     </label>
                     <div className="relative">
                       <Phone
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500"
                         size={18}
                       />
                       <input
                         name="phone"
                         value={form.phone}
                         onChange={handleChange}
-                        className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium"
+                        className="w-full pl-12 pr-4 py-3.5 bg-blue-50/30 border-2 border-blue-100 focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium outline-none"
                       />
                     </div>
                   </div>
@@ -241,14 +233,14 @@ export default function EditProfile() {
                   Keamanan
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Field Password */}
+                  {/* PASSWORD (EDITABLE) */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                       Ganti Password
                     </label>
                     <div className="relative">
                       <Lock
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500"
                         size={18}
                       />
                       <input
@@ -256,15 +248,14 @@ export default function EditProfile() {
                         type="password"
                         value={form.password}
                         onChange={handleChange}
-                        placeholder="Isi jika ingin ganti"
-                        className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium"
+                        placeholder="Isi untuk mengganti"
+                        className="w-full pl-12 pr-4 py-3.5 bg-blue-50/30 border-2 border-blue-100 focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium outline-none"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="pt-6 flex justify-end gap-4 border-t border-gray-50">
                 <button
                   type="button"
@@ -276,7 +267,7 @@ export default function EditProfile() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-10 py-3.5 bg-black text-white rounded-xl font-bold flex items-center gap-3 hover:bg-gray-800 disabled:opacity-50 transition-all shadow-lg shadow-gray-200"
+                  className="px-10 py-3.5 bg-black text-white rounded-xl font-bold flex items-center gap-3 hover:bg-gray-800 disabled:opacity-50 transition-all shadow-lg"
                 >
                   {loading ? (
                     <Loader2 className="animate-spin" size={18} />

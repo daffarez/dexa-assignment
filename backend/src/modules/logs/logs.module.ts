@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { LogsService } from './logs.service';
-import { LogsListener } from './logs.listener';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({

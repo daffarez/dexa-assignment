@@ -27,33 +27,40 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    socket.on("user.updated", (payload) => {
-      toast.success(`Update: ${payload.data.name} mengubah profil`);
+    socket.on("user_activity", (payload) => {
+      toast.success(`Update: ${payload.data.name} mengubah profil`, {
+        duration: 4000,
+      });
 
-      setLogs((prev) => [
-        {
-          id: Date.now(),
-          user: payload.data.name,
-          action: "Update Profile",
-          time: new Date().toLocaleTimeString(),
-        },
-        ...prev,
-      ]);
+      setLogs((prev) =>
+        [
+          {
+            id: Date.now(),
+            user: payload.data.name,
+            action: "Update Profile",
+            time: new Date().toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+          ...prev,
+        ].slice(0, 10),
+      );
 
-      // Update state tabel secara real-time jika ada perubahan
       setEmployees((prev) =>
         prev.map((emp) =>
-          emp.id === payload.data.id ? { ...emp, ...payload.data } : emp,
+          emp.id === payload.data.id
+            ? { ...emp, ...payload.data, updatedAt: new Date() }
+            : emp,
         ),
       );
     });
 
     return () => {
-      socket.off("user.updated");
+      socket.off("user_activity");
     };
   }, []);
 
-  // Di dalam AdminDashboard.tsx
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user.role !== "ADMIN") {
