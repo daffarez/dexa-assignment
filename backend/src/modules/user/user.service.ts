@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { QueueService } from 'src/common/queue/queue.service';
-import { UpdateProfilePayload } from './users.schema';
+import { UpdateProfilePayload } from './user.schema';
 
 @Injectable()
 export class UsersService {
@@ -33,9 +33,11 @@ export class UsersService {
     return result;
   }
 
-  async updateProfile(userId: string, data: UpdateProfilePayload) {
-    const updateData: UpdateProfilePayload = {};
+  async updateProfile(userId: string, data: any) {
+    const updateData: any = {};
 
+    if (data.name) updateData.name = data.name;
+    if (data.role) updateData.role = data.role;
     if (data.phone) updateData.phone = data.phone;
     if (data.photoUrl) updateData.photoUrl = data.photoUrl;
 
@@ -57,7 +59,7 @@ export class UsersService {
     });
 
     return {
-      message: 'Profile updated successfully',
+      message: 'User data updated successfully',
       data: safeUser,
     };
   }

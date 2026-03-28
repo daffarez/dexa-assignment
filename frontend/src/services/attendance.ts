@@ -11,3 +11,7 @@ export const checkOut = () => {
 export const getMyAttendance = () => {
   return api.get("/attendance/me");
 };
+
+export const getUserAttendance = (userId: string) => {
+  return api.get(`/attendance/user/${userId}`);
+};

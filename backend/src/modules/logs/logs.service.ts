@@ -22,8 +22,6 @@ export class LogsService implements OnModuleInit {
 
       await channel.assertQueue(queue, { durable: true });
 
-      console.log('RabbitMQ Consumer Started: Waiting for logs');
-
       channel.consume(queue, async (msg) => {
         if (msg) {
           try {

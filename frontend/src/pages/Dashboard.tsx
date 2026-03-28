@@ -1,9 +1,7 @@
 import {
   User,
-  LogOut,
   Clock,
   Calendar,
-  ShieldCheck,
   LogIn as LogInIcon,
   LogOutIcon,
   PencilLine,
@@ -13,22 +11,46 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { checkIn, checkOut, getMyAttendance } from "../services/attendance";
+import { getProfileFromToken } from "../utils/auth";
+import { useSearchParams } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"PROFILE" | "HISTORY">("PROFILE");
+  const activeTab = searchParams.get("tab") || "PROFILE";
+
+  const setActiveTab = (tabName: string) => {
+    setSearchParams({ tab: tabName });
+  };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
       navigate("/");
       return;
     }
-    setUser(JSON.parse(storedUser));
-    fetchAttendance();
+
+    try {
+      const decoded = getProfileFromToken(token);
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime) {
+        console.warn("Token expired");
+        localStorage.clear();
+        navigate("/");
+        return;
+      }
+
+      setUser(decoded);
+      fetchAttendance();
+    } catch (error) {
+      console.error("Invalid token format");
+      localStorage.clear();
+      navigate("/");
+    }
   }, [navigate]);
 
   const fetchAttendance = async () => {
@@ -167,62 +189,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] flex">
-      {/* SIDEBAR */}
-      <aside className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col sticky top-0 h-screen">
-        <div className="p-8 border-b border-gray-100 text-center">
-          <h1 className="text-2xl font-extrabold tracking-tighter text-black italic">
-            DEXA<span className="text-blue-600">GROUP</span>
-          </h1>
-        </div>
-        <nav className="flex-1 p-6 space-y-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 mb-4">
-            Menu Utama
-          </p>
-          <button
-            onClick={() => setActiveTab("PROFILE")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-              activeTab === "PROFILE"
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-500 hover:bg-gray-50"
-            }`}
-          >
-            <User size={20} /> Profil Saya
-          </button>
-
-          <button
-            onClick={() => setActiveTab("HISTORY")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
-              activeTab === "HISTORY"
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-500 hover:bg-gray-50"
-            }`}
-          >
-            <Calendar size={20} /> Riwayat Absen
-          </button>
-          {user.role === "ADMIN" && (
-            <div className="pt-6 mt-6 border-t border-gray-100">
-              <button
-                onClick={() => navigate("/admin")}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-purple-50 text-purple-700 rounded-xl font-bold hover:bg-purple-100 transition-all"
-              >
-                <ShieldCheck size={20} /> Admin Panel
-              </button>
-            </div>
-          )}
-        </nav>
-        <div className="p-6 border-t border-gray-100">
-          <button
-            onClick={() => {
-              localStorage.clear();
-              navigate("/");
-            }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl font-bold transition-all"
-          >
-            <LogOut size={18} /> Logout
-          </button>
-        </div>
-      </aside>
-
       {/* CONTENT AREA */}
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto">
         <div className="max-w-6xl mx-auto space-y-8">
@@ -246,7 +212,6 @@ export default function Dashboard() {
               <Clock className="text-blue-500" size={24} />
             </div>
           </div>
-
           {activeTab === "PROFILE" ? (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
               {/* LEFT: PROFILE */}

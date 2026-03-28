@@ -1,6 +1,9 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { QueueService } from 'src/common/queue/queue.service';
 
 @Injectable()
 export class AttendanceService {
@@ -80,7 +83,7 @@ export class AttendanceService {
     });
   }
 
-  async getMyAttendance(userId: string) {
+  async getUserAttendance(userId: string) {
     const data = await this.prisma.attendance.findMany({
       where: { userId },
       orderBy: { date: 'desc' },

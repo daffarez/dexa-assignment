@@ -1,4 +1,12 @@
-import { Controller, Post, Get, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  UseGuards,
+  Req,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { type RequestWithUser } from '../../common/guards/jwt-payload.types';
@@ -22,6 +30,11 @@ export class AttendanceController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getMyAttendance(@Req() req: RequestWithUser) {
-    return this.attendanceService.getMyAttendance(req.user.sub);
+    return this.attendanceService.getUserAttendance(req.user.sub);
+  }
+
+  @Get('user/:userId')
+  async getUserAttendance(@Param('userId') userId: string) {
+    return this.attendanceService.getUserAttendance(userId);
   }
 }

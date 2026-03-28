@@ -17,12 +17,9 @@ export default function LoginPage() {
 
     try {
       const loginResponse = await login({ email, password });
+      const userToken = loginResponse.access_token;
 
-      const token = loginResponse.access_token;
-      const userProfile = loginResponse.user;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userProfile));
+      localStorage.setItem("token", userToken);
 
       navigate("/dashboard");
     } catch (err: any) {
