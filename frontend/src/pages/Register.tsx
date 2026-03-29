@@ -9,11 +9,13 @@ import {
   Mail,
   Lock,
   UserCircle,
+  ShieldCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getProfileFromToken } from "../utils/auth";
 import { AvatarUpload } from "../components/AvatarUpload";
 import { FormInput } from "../components/FormInput";
+import { FormSelect } from "../components/FormSelect";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -153,17 +155,16 @@ export default function Register() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-gray-400 uppercase">
-                Role
-              </label>
-              <select
+              <FormSelect
+                label="Hak Akses"
+                icon={<ShieldCheck size={12} className="text-blue-500" />}
+                options={[
+                  { value: "EMPLOYEE", label: "EMPLOYEE" },
+                  { value: "ADMIN", label: "ADMIN" },
+                ]}
                 value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold outline-none"
-              >
-                <option value="EMPLOYEE">EMPLOYEE</option>
-                <option value="ADMIN">ADMIN</option>
-              </select>
+                onChange={(val) => setForm({ ...form, role: val })}
+              />
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 items-end pt-6 border-t border-gray-100">

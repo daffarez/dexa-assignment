@@ -6,9 +6,11 @@ import {
   UserCircle,
   UserIcon,
   Lock as LockIcon,
+  ShieldCheck,
 } from "lucide-react";
 import React, { useRef } from "react";
 import { FormInput } from "./FormInput";
+import { FormSelect } from "./FormSelect";
 
 interface EditFormData {
   name: string;
@@ -60,6 +62,11 @@ export default function EditEmployeeModal({
     setFormData({ ...formData, photoUrl: "" });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const roleOptions = [
+    { value: "EMPLOYEE", label: "EMPLOYEE" },
+    { value: "ADMIN", label: "ADMIN" },
+  ];
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
@@ -124,21 +131,13 @@ export default function EditEmployeeModal({
           />
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-                Hak Akses
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option value="EMPLOYEE">EMPLOYEE</option>
-                <option value="ADMIN">ADMIN</option>
-              </select>
-            </div>
+            <FormSelect
+              label="Hak Akses"
+              icon={<ShieldCheck size={12} className="text-blue-500" />}
+              options={roleOptions}
+              value={formData.role}
+              onChange={(value) => setFormData({ ...formData, role: value })}
+            />
 
             <FormInput
               label="Password Baru"
