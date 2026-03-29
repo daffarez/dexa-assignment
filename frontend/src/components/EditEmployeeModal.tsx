@@ -1,5 +1,14 @@
-import { Camera, Trash2, UserIcon } from "lucide-react";
+import {
+  Briefcase,
+  Camera,
+  Phone,
+  Trash2,
+  UserCircle,
+  UserIcon,
+  Lock as LockIcon,
+} from "lucide-react";
 import React, { useRef } from "react";
+import { FormInput } from "./FormInput";
 
 interface EditFormData {
   name: string;
@@ -77,21 +86,19 @@ export default function EditEmployeeModal({
                 <UserIcon size={32} className="text-gray-300" />
               )}
             </div>
-
             <div className="absolute -bottom-1 -right-1 flex gap-1.5">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-blue-600 p-2 rounded-full text-white border-2 border-white hover:bg-blue-700 transition-all shadow-md active:scale-95"
+                className="bg-blue-600 p-2 rounded-full text-white border-2 border-white hover:bg-blue-700 shadow-md"
               >
                 <Camera size={14} />
               </button>
-
               {formData.photoUrl && (
                 <button
                   type="button"
                   onClick={handleRemovePhoto}
-                  className="bg-red-50 p-2 rounded-full text-red-600 border-2 border-white hover:bg-red-100 transition-all shadow-md active:scale-95"
+                  className="bg-red-50 p-2 rounded-full text-red-600 border-2 border-white hover:bg-red-100 shadow-md"
                 >
                   <Trash2 size={14} strokeWidth={2.5} />
                 </button>
@@ -105,26 +112,16 @@ export default function EditEmployeeModal({
             className="hidden"
             accept="image/*"
           />
-          <p className="text-[9px] text-gray-400 font-bold uppercase mt-2 tracking-widest">
-            {formData.photoUrl ? "Ganti / Hapus Foto" : "Unggah Foto Karyawan"}
-          </p>
         </div>
 
         <form className="space-y-5" onSubmit={onSubmit}>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-              Nama Lengkap
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            />
-          </div>
+          <FormInput
+            label="Nama Lengkap"
+            icon={<UserCircle size={14} className="text-blue-500" />}
+            value={formData.name}
+            required
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
@@ -142,63 +139,50 @@ export default function EditEmployeeModal({
                 <option value="ADMIN">ADMIN</option>
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-                Password Baru
-              </label>
-              <input
-                type="password"
-                placeholder="Isi jika ganti"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </div>
 
-          {/* Input Nomor Telepon & Posisi */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-              Nomor Telepon
-            </label>
-            <input
-              type="text"
-              value={formData.phone}
+            <FormInput
+              label="Password Baru"
+              type="password"
+              placeholder="Isi jika ganti"
+              icon={<LockIcon size={14} className="text-red-500" />}
+              value={formData.password}
               onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
+                setFormData({ ...formData, password: e.target.value })
               }
-              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-              Posisi / Jabatan
-            </label>
-            <input
-              type="text"
-              placeholder="Contoh: Backend Developer"
-              value={formData.position}
-              onChange={(e) =>
-                setFormData({ ...formData, position: e.target.value })
-              }
-              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
+          <FormInput
+            label="Nomor Telepon"
+            icon={<Phone size={14} className="text-blue-500" />}
+            value={formData.phone}
+            placeholder="0812..."
+            onChange={(e) =>
+              setFormData({ ...formData, phone: e.target.value })
+            }
+          />
+
+          <FormInput
+            label="Posisi / Jabatan"
+            icon={<Briefcase size={14} className="text-blue-500" />}
+            value={formData.position}
+            placeholder="Contoh: Backend Developer"
+            onChange={(e) =>
+              setFormData({ ...formData, position: e.target.value })
+            }
+          />
 
           <div className="pt-6 flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-4 bg-gray-100 text-gray-500 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+              className="flex-1 px-6 py-4 bg-gray-100 text-gray-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-200"
+              className="flex-1 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all"
             >
               Simpan
             </button>
