@@ -23,7 +23,7 @@ export default function LoginPage() {
 
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Email atau password salah.");
+      setError(err?.response?.data?.message || "something went wrong");
     } finally {
       setLoading(false);
     }
@@ -31,7 +31,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* HEADER LOGO/JUDUL */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="mx-auto h-12 w-12 rounded-xl bg-black flex items-center justify-center shadow-lg">
           <LogIn className="h-6 w-6 text-white" />
@@ -44,11 +43,9 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* KARTU FORM LOGIN */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-xl shadow-gray-100 rounded-2xl sm:px-10 border border-gray-100">
           <form className="space-y-6" onSubmit={handleLogin}>
-            {/* ALERT ERROR */}
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md flex items-center gap-3">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -56,7 +53,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* INPUT EMAIL */}
             <div>
               <label
                 htmlFor="email"
@@ -82,7 +78,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* INPUT PASSWORD */}
             <div>
               <label
                 htmlFor="password"
@@ -108,34 +103,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* FITUR TAMBAHAN (Lupa Password/Remember Me) */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Ingat saya
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a
-                  href="#"
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Lupa password?
-                </a>
-              </div>
-            </div>
-
-            {/* TOMBOL SUBMIT */}
             <div>
               <button
                 type="submit"
@@ -158,9 +125,8 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* FOOTER KECIL */}
         <p className="mt-8 text-center text-xs text-gray-400">
-          &copy; 2026 PT. Perusahaan Anda. All rights reserved.
+          &copy; 2026 Daffarez Elguska.
         </p>
       </div>
     </div>

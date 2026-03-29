@@ -1,31 +1,25 @@
-import {
-  User,
-  Clock,
-  Calendar,
-  LogIn as LogInIcon,
-  LogOutIcon,
-  PencilLine,
-  Loader2,
-} from "lucide-react";
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { checkIn, checkOut, getMyAttendance } from "../services/attendance";
 import { getProfileFromToken } from "../utils/auth";
 import { useSearchParams } from "react-router-dom";
+import ProfileCard from "../components/ProfileCard";
+import AttendanceActions from "../components/AttendanceActions";
+import RecentActivities from "../components/RecentActivities";
+import AttendanceFilter from "../components/AttendanceFilter";
+import AttendanceHistoryTable, {
+  type AttendanceRecord,
+} from "../components/AttendanceHistoryTable";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const activeTab = searchParams.get("tab") || "PROFILE";
-
-  const setActiveTab = (tabName: string) => {
-    setSearchParams({ tab: tabName });
-  };
-
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -214,264 +208,31 @@ export default function Dashboard() {
           </div>
           {activeTab === "PROFILE" ? (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-              {/* LEFT: PROFILE */}
               <div className="lg:col-span-1 space-y-6">
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col items-center">
-                  <div className="mb-6 w-32 h-32 rounded-full border-[6px] border-gray-50 shadow-inner overflow-hidden bg-gray-100">
-                    {user.photoUrl ? (
-                      <img
-                        src={user.photoUrl}
-                        alt="avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <User size={48} />
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {user.name}
-                  </h3>
-                  <p className="text-blue-600 font-bold text-xs mb-6 uppercase tracking-wider">
-                    {user.role}
-                  </p>
-                  <button
-                    onClick={() => navigate("/edit-profile")}
-                    className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border border-gray-100"
-                  >
-                    <PencilLine size={16} /> Edit Profil
-                  </button>
-                </div>
+                <ProfileCard user={user} />
               </div>
-
-              {/* RIGHT: ATTENDANCE */}
               <div className="xl:col-span-2 space-y-8">
-                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-50">
-                  <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-3">
-                    <div className="w-2 h-6 bg-blue-600 rounded-full"></div>{" "}
-                    Presensi Hari Ini
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Tombol Check In */}
-                    <button
-                      onClick={() => handleAttendance("IN")}
-                      disabled={hasCheckedInToday || loading}
-                      className={`relative overflow-hidden group p-6 rounded-2xl transition-all ${
-                        hasCheckedInToday
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-gray-900 text-white hover:bg-black"
-                      }`}
-                    >
-                      <div className="flex flex-col items-start gap-4">
-                        <div
-                          className={`p-3 rounded-xl ${hasCheckedInToday ? "bg-gray-200" : "bg-white/10 group-hover:bg-blue-600"}`}
-                        >
-                          {loading ? (
-                            <Loader2 className="animate-spin" size={28} />
-                          ) : (
-                            <LogInIcon size={28} />
-                          )}
-                        </div>
-                        <div className="text-left">
-                          <p className="text-2xl font-black uppercase italic tracking-tighter">
-                            Check In
-                          </p>
-                          <p className="text-[10px] font-bold uppercase">
-                            {hasCheckedInToday ? "Selesai" : "Mulai Bekerja"}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* Tombol Check Out */}
-                    <button
-                      onClick={() => handleAttendance("OUT")}
-                      disabled={
-                        !hasCheckedInToday || hasCheckedOutToday || loading
-                      }
-                      className={`relative overflow-hidden group p-6 rounded-2xl transition-all border-2 border-dashed ${
-                        !hasCheckedInToday || hasCheckedOutToday
-                          ? "border-gray-200 text-gray-300 opacity-60 cursor-not-allowed"
-                          : "border-orange-500 text-orange-600 hover:bg-orange-50"
-                      }`}
-                    >
-                      <div className="flex flex-col items-start gap-4">
-                        <div
-                          className={`p-3 rounded-xl ${!hasCheckedInToday || hasCheckedOutToday ? "bg-gray-50" : "bg-orange-100 group-hover:bg-orange-200"}`}
-                        >
-                          <LogOutIcon size={28} />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-2xl font-black uppercase italic tracking-tighter">
-                            Check Out
-                          </p>
-                          <p className="text-[10px] font-bold uppercase">
-                            {hasCheckedOutToday ? "Selesai" : "Selesai Bekerja"}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* SUMMARY LIST */}
-                <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-50 overflow-hidden">
-                  <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-                    <h3 className="text-lg font-black text-gray-900">
-                      Aktivitas Terkini
-                    </h3>
-                  </div>
-                  <div className="p-6">
-                    {logs.length === 0 ? (
-                      <div className="p-12 text-center space-y-4">
-                        <Calendar size={32} className="text-gray-200 mx-auto" />
-                        <p className="text-gray-400 font-bold text-sm italic">
-                          Belum ada aktivitas tercatat.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                        {logs.slice(0, 5).map((log, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div
-                                className={`p-2 rounded-lg ${log.status === "MASUK" ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"}`}
-                              >
-                                {log.status === "MASUK" ? (
-                                  <LogInIcon size={18} />
-                                ) : (
-                                  <LogOutIcon size={18} />
-                                )}
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">
-                                  {log.status}
-                                </p>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">
-                                  {new Date(log.date).toLocaleDateString(
-                                    "id-ID",
-                                    {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    },
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-                            <p className="text-sm font-black text-gray-700">
-                              {new Date(log.time).toLocaleTimeString("id-ID", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}{" "}
-                              WIB
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <AttendanceActions
+                  onAttendance={handleAttendance}
+                  hasCheckedInToday={hasCheckedInToday}
+                  hasCheckedOutToday={hasCheckedOutToday}
+                  loading={loading}
+                />
+                <RecentActivities logs={logs} />
               </div>
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in duration-500">
-              {/* FILTER SECTION */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase">
-                    Filter Tanggal (From - To)
-                  </label>
-                  <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-200">
-                    <input
-                      type="date"
-                      value={startInput}
-                      onChange={(e) => handleStartDateChange(e.target.value)} // Gunakan handler baru
-                      className="bg-transparent text-sm font-bold outline-none px-2 focus:text-blue-600"
-                    />
-                    <span className="text-gray-300 font-bold">→</span>
-                    <input
-                      type="date"
-                      value={endInput}
-                      onChange={(e) => handleEndDateChange(e.target.value)} // Gunakan handler baru
-                      className="bg-transparent text-sm font-bold outline-none px-2 focus:text-blue-600"
-                    />
-                    <button
-                      onClick={handleSearch}
-                      className="ml-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
-                    >
-                      Cari
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* TABLE SUMMARY */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-900 text-white">
-                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest">
-                        Tanggal
-                      </th>
-                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-center">
-                        Masuk
-                      </th>
-                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-center">
-                        Pulang
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {displayData.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={3}
-                          className="px-6 py-10 text-center text-gray-400 italic text-sm"
-                        >
-                          Tidak ada data ditemukan.
-                        </td>
-                      </tr>
-                    ) : (
-                      displayData.map((item: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-gray-50/50">
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-black text-gray-700">
-                              {item.date}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <span
-                              className={`px-4 py-1.5 rounded-lg text-sm font-black ${
-                                item.masuk !== "-"
-                                  ? "bg-green-50 text-green-600"
-                                  : "text-gray-300"
-                              }`}
-                            >
-                              {item.masuk}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <span
-                              className={`px-4 py-1.5 rounded-lg text-sm font-black ${
-                                item.pulang !== "-"
-                                  ? "bg-blue-50 text-blue-600"
-                                  : "text-gray-300"
-                              }`}
-                            >
-                              {item.pulang}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <AttendanceFilter
+                startDate={startInput}
+                endDate={endInput}
+                onStartDateChange={handleStartDateChange}
+                onEndDateChange={handleEndDateChange}
+                onSearch={handleSearch}
+              />
+              <AttendanceHistoryTable
+                data={displayData as unknown[] as AttendanceRecord[]}
+              />
             </div>
           )}
         </div>

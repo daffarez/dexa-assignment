@@ -6,6 +6,8 @@ import { Bell, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProfileFromToken } from "../utils/auth";
 import { getUserAttendance } from "../services/attendance";
+import EmployeeTable from "../components/EmployeeTable";
+import LiveActivityFeed from "../components/LiveActivityFeed";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -198,132 +200,17 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-white">
-              <h2 className="font-bold text-gray-800">Daftar Karyawan</h2>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
-                  <tr>
-                    <th className="px-6 py-4">Karyawan</th>
-                    <th className="px-6 py-4">Kontak</th>
-                    <th className="px-6 py-4">Role</th>
-                    <th className="px-6 py-4">Terakhir Update</th>
-                    <th className="px-6 py-4">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {loading ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="text-center py-20 text-gray-400 italic"
-                      >
-                        Memuat data...
-                      </td>
-                    </tr>
-                  ) : (
-                    employees.map((emp) => (
-                      <tr
-                        key={emp.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gray-200 border overflow-hidden">
-                              {emp.photoUrl ? (
-                                <img
-                                  src={emp.photoUrl}
-                                  alt={emp.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                                  No Pic
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900 capitalize">
-                                {emp.name}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm text-gray-700">{emp.email}</p>
-                          <p className="text-xs text-gray-400">
-                            {emp.phone || "-"}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                              emp.role === "ADMIN"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-blue-100 text-blue-700"
-                            }`}
-                          >
-                            {emp.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-gray-500">
-                          {new Date(emp.updatedAt).toLocaleDateString("id-ID")}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleShowAttendance(emp)}
-                              className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-100 transition-all"
-                            >
-                              <span>Presensi</span>
-                            </button>
-
-                            <button
-                              onClick={() => handleOpenEditModal(emp)}
-                              className="flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-gray-200 transition-all"
-                            >
-                              <span>Edit</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+          <div className="lg:col-span-3">
+            <EmployeeTable
+              employees={employees}
+              loading={loading}
+              onShowAttendance={handleShowAttendance}
+              onEditEmployee={handleOpenEditModal}
+            />
           </div>
 
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Bell size={18} className="text-blue-500" />
-                Live Activity
-              </h3>
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {logs.length === 0 && (
-                  <p className="text-xs text-gray-400 italic">
-                    Menunggu aktivitas...
-                  </p>
-                )}
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="relative pl-4 border-l-2 border-blue-100 py-1"
-                  >
-                    <p className="text-xs font-bold text-gray-800">
-                      {log.user}
-                    </p>
-                    <p className="text-[10px] text-gray-500">
-                      {log.action} • {log.time}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="lg:col-span-1">
+            <LiveActivityFeed logs={logs} />
           </div>
         </div>
       </div>
