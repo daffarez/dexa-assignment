@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/Admin";
 import EditProfile from "./pages/EditProfile";
 import Navbar from "./components/Navbar";
+import { LoadingProvider } from "./context/LoadingContext";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -20,17 +21,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Routes>
-      </AppLayout>
-    </BrowserRouter>
+    <LoadingProvider>
+      <BrowserRouter>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Routes>
+        </AppLayout>
+      </BrowserRouter>
+    </LoadingProvider>
   );
 }
 

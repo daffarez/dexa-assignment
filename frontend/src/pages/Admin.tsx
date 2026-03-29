@@ -12,12 +12,13 @@ import AttendanceHistoryModal from "../components/AttendanceHistoryModal";
 import EditEmployeeModal from "../components/EditEmployeeModal";
 import { supabase } from "../lib/supabase";
 import { deleteImageFromSupabase } from "../utils/supabase";
+import { useLoading } from "../context/LoadingContext";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { setIsLoading } = useLoading();
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [employeeAttendance, setEmployeeAttendance] = useState<any[]>([]);
   const [isUserAttendanceModalOpen, setIsUserAttendanceModalOpen] =
@@ -51,7 +52,7 @@ export default function AdminDashboard() {
 
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
 
     try {
       const originalUser = employees.find((emp) => emp.id === editingId);
@@ -98,20 +99,20 @@ export default function AdminDashboard() {
 
       toast.error(errorMsg || "Gagal memperbarui data karyawan");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
       setSelectedFile(null);
     }
   };
 
   const fetchData = async () => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const res = await getUsers();
       setEmployees(res.data);
     } catch (err) {
       toast.error("Gagal memuat data karyawan");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -239,7 +240,6 @@ export default function AdminDashboard() {
           <div className="lg:col-span-3">
             <EmployeeTable
               employees={employees}
-              loading={loading}
               onShowAttendance={handleShowAttendance}
               onEditEmployee={handleOpenEditModal}
             />

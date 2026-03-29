@@ -12,14 +12,16 @@ import AttendanceFilter from "../components/AttendanceFilter";
 import AttendanceHistoryTable, {
   type AttendanceRecord,
 } from "../components/AttendanceHistoryTable";
+import { useLoading } from "../context/LoadingContext";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const activeTab = searchParams.get("tab") || "PROFILE";
+  const { setIsLoading } = useLoading();
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -48,6 +50,7 @@ export default function Dashboard() {
   }, [navigate]);
 
   const fetchAttendance = async () => {
+    setIsLoading(true);
     try {
       const res = await getMyAttendance();
 
@@ -59,6 +62,8 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Failed fetchin attendance record", err);
       setLogs([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -88,7 +93,7 @@ export default function Dashboard() {
   });
 
   const handleAttendance = async (type: "IN" | "OUT") => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       if (type === "IN") await checkIn();
       else await checkOut();
@@ -98,7 +103,7 @@ export default function Dashboard() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal melakukan absen");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -216,7 +221,6 @@ export default function Dashboard() {
                   onAttendance={handleAttendance}
                   hasCheckedInToday={hasCheckedInToday}
                   hasCheckedOutToday={hasCheckedOutToday}
-                  loading={loading}
                 />
                 <RecentActivities logs={logs} />
               </div>
