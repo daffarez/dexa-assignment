@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { getProfileFromToken } from "../utils/auth";
+import { uploadProfilePicture } from "../utils";
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function EditProfile() {
         });
         setPreview(decoded.photoUrl || "");
       } catch (error) {
-        console.error("TInvalid token:", error);
+        console.error("Invalid token:", error);
       }
     }
   }, []);
@@ -69,46 +70,35 @@ export default function EditProfile() {
     setPreview("");
   };
 
-  const uploadImage = async () => {
-    if (!file) return null;
-    const fileName = `avatar-${Date.now()}`;
-    const { data, error } = await supabase.storage
-      .from("profile-pictures")
-      .upload(fileName, file);
-
-    if (error) throw error;
-    const { data: publicUrl } = supabase.storage
-      .from("profile-pictures")
-      .getPublicUrl(data.path);
-
-    return publicUrl.publicUrl;
-  };
-
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setStatus({ type: null, msg: "" });
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Invalid session");
+
+      const currentUser = getProfileFromToken(token);
+      const initialPhotoUrl = currentUser?.photoUrl || "";
+
       let finalPhotoUrl = preview;
 
       if (file) {
-        const uploadedUrl = await uploadImage();
-        if (uploadedUrl) finalPhotoUrl = uploadedUrl;
+        finalPhotoUrl = await uploadProfilePicture(file, initialPhotoUrl);
       }
 
       const payload: any = {
         phone: form.phone,
         photoUrl: finalPhotoUrl,
       };
-
       if (form.password) payload.password = form.password;
 
       const response = await updateProfile(payload);
 
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const updatedUser = { ...currentUser, ...response.data };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (response.access_token) {
+        localStorage.setItem("token", response.access_token);
+      }
 
       setForm((prev: any) => ({
         ...prev,
@@ -121,7 +111,10 @@ export default function EditProfile() {
     } catch (err: any) {
       setStatus({
         type: "error",
-        msg: err?.response?.data?.message || "Gagal memperbarui profil",
+        msg:
+          err?.response?.data?.message ||
+          err.message ||
+          "Gagal memperbarui profil",
       });
     } finally {
       setLoading(false);

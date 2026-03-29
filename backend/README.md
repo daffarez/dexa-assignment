@@ -6,10 +6,10 @@ Backend service untuk aplikasi monitoring karyawan, mencakup autentikasi, manaje
 
 ```
 # Connect to Supabase via connection pooling
-DATABASE_URL="postgresql://postgres.vjlgahqrsldnpfxjojib:Dpy8mtQWmsm2bCap@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DATABASE_URL=
 
 # Direct connection to the database. Used for migrations
-DIRECT_URL="postgresql://postgres.vjlgahqrsldnpfxjojib:Dpy8mtQWmsm2bCap@aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres"
+DIRECT_URL=
 ```
 
 ## Install Dependencies

@@ -13,6 +13,13 @@ import AttendanceHistoryTable, {
   type AttendanceRecord,
 } from "../components/AttendanceHistoryTable";
 import { useLoading } from "../context/LoadingContext";
+import {
+  formatTime,
+  getFirstDayOfMonth,
+  getTodayDate,
+  isToday,
+  getFirstName,
+} from "../utils";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -67,30 +74,12 @@ export default function Dashboard() {
     }
   };
 
-  const now = new Date();
-  const todayDate = now.getDate();
-  const todayMonth = now.getMonth();
-  const todayYear = now.getFullYear();
-
-  const hasCheckedInToday = logs.some((l) => {
-    const d = new Date(l.date);
-    return (
-      d.getDate() === todayDate &&
-      d.getMonth() === todayMonth &&
-      d.getFullYear() === todayYear &&
-      l.status === "MASUK"
-    );
-  });
-
-  const hasCheckedOutToday = logs.some((l) => {
-    const d = new Date(l.date);
-    return (
-      d.getDate() === todayDate &&
-      d.getMonth() === todayMonth &&
-      d.getFullYear() === todayYear &&
-      l.status === "PULANG"
-    );
-  });
+  const hasCheckedInToday = logs.some(
+    (l) => isToday(l.date) && l.status === "MASUK",
+  );
+  const hasCheckedOutToday = logs.some(
+    (l) => isToday(l.date) && l.status === "PULANG",
+  );
 
   const handleAttendance = async (type: "IN" | "OUT") => {
     setIsLoading(true);
@@ -105,21 +94,6 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getFirstDayOfMonth = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}-01`;
-  };
-
-  const getTodayDate = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
   };
 
   const [startInput, setStartInput] = useState(getFirstDayOfMonth());
@@ -152,10 +126,7 @@ export default function Dashboard() {
       acc[dateKey] = { date: dateKey, masuk: "-", pulang: "-" };
     }
 
-    const timeStr = new Date(curr.time).toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const timeStr = formatTime(curr.time);
 
     if (curr.status === "MASUK") {
       acc[dateKey].masuk = timeStr;
@@ -196,7 +167,7 @@ export default function Dashboard() {
                 Personal Dashboard
               </h2>
               <p className="text-gray-500 font-medium">
-                Selamat bekerja, {user.name.split(" ")[0]}!
+                Selamat bekerja, {getFirstName(user.name)}!
               </p>
             </div>
             <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">

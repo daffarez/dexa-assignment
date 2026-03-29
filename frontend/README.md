@@ -5,8 +5,8 @@ Aplikasi monitoring karyawan, mencakup autentikasi, manajemen profil, absensi, n
 ## Setup Environment
 
 ```
-VITE_SUPABASE_URL=https://vjlgahqrsldnpfxjojib.supabase.co
-VITE_SUPABASE_KEY=sb_publishable_KZAVAqmbQmIo3Lr_5_G5mw_LKsgI7E3
+VITE_SUPABASE_URL=
+VITE_SUPABASE_KEY=
 ```
 
 ## Install Dependencies

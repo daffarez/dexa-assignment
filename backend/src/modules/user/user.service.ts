@@ -3,12 +3,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { QueueService } from 'src/common/queue/queue.service';
 import { UpdateProfilePayload } from './user.schema';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private queueService: QueueService,
+    private jwtService: JwtService,
   ) {}
 
   async findAll() {
@@ -33,7 +35,7 @@ export class UsersService {
     return result;
   }
 
-  async updateProfile(userId: string, data: any) {
+  async updateProfile(userId: string, data: UpdateProfilePayload) {
     const updateData: any = {};
 
     if (data.name) updateData.name = data.name;
@@ -52,6 +54,8 @@ export class UsersService {
 
     const { password, ...safeUser } = user;
 
+    const newToken = this.jwtService.sign(safeUser);
+
     await this.queueService.publish('user.updated', {
       userId,
       action: 'UPDATE_PROFILE',
@@ -60,6 +64,7 @@ export class UsersService {
 
     return {
       message: 'User data updated successfully',
+      access_token: newToken,
       data: safeUser,
     };
   }

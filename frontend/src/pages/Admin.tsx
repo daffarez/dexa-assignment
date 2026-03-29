@@ -10,9 +10,8 @@ import EmployeeTable from "../components/EmployeeTable";
 import LiveActivityFeed from "../components/LiveActivityFeed";
 import AttendanceHistoryModal from "../components/AttendanceHistoryModal";
 import EditEmployeeModal from "../components/EditEmployeeModal";
-import { supabase } from "../lib/supabase";
-import { deleteImageFromSupabase } from "../utils/supabase";
 import { useLoading } from "../context/LoadingContext";
+import { uploadProfilePicture, deleteImageFromSupabase } from "../utils";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -50,7 +49,7 @@ export default function AdminDashboard() {
     setIsUserEditModalOpen(true);
   };
 
-  const handleUpdateUser = async (e: React.FormEvent) => {
+  const handleUpdateUser = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -61,20 +60,10 @@ export default function AdminDashboard() {
       let finalPhotoUrl = formData.photoUrl;
 
       if (selectedFile) {
-        if (initialPhotoUrl) {
-          await deleteImageFromSupabase(initialPhotoUrl);
-        }
-
-        const fileName = `avatar-${Date.now()}`;
-        const { data, error } = await supabase.storage
-          .from("profile-pictures")
-          .upload(fileName, selectedFile);
-
-        if (error) throw error;
-        const { data: publicUrl } = supabase.storage
-          .from("profile-pictures")
-          .getPublicUrl(data.path);
-        finalPhotoUrl = publicUrl.publicUrl;
+        finalPhotoUrl = await uploadProfilePicture(
+          selectedFile,
+          initialPhotoUrl,
+        );
       } else if (formData.photoUrl === "" && initialPhotoUrl !== "") {
         await deleteImageFromSupabase(initialPhotoUrl);
         finalPhotoUrl = "";
