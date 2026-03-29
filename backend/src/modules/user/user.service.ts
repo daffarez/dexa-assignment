@@ -39,7 +39,7 @@ export class UsersService {
     if (data.name) updateData.name = data.name;
     if (data.role) updateData.role = data.role;
     if (data.phone) updateData.phone = data.phone;
-    if (data.photoUrl) updateData.photoUrl = data.photoUrl;
+    if (typeof data.photoUrl === 'string') updateData.photoUrl = data.photoUrl;
 
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 10);

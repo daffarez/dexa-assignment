@@ -2,26 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/auth";
 import { supabase } from "../lib/supabase";
-import {
-  ArrowLeft,
-  Camera,
-  UserPlus,
-  Briefcase,
-  Phone,
-  Mail,
-  Lock,
-} from "lucide-react";
+import { ArrowLeft, Camera, UserPlus, Phone, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { getProfileFromToken } from "../utils/auth";
 
 export default function Register() {
   const navigate = useNavigate();
 
-  // Proteksi Halaman (Opsional tapi Direkomendasikan)
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // 1. Cek apakah token ada
     if (!token) {
       toast.error("Sesi habis, silakan login kembali");
       navigate("/");
@@ -36,7 +26,6 @@ export default function Register() {
         navigate("/admin");
       }
     } catch (err) {
-      // Jika JSON.parse gagal (data corrupt)
       navigate("/");
     }
   }, [navigate]);
@@ -44,9 +33,10 @@ export default function Register() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: "",
-    phone: "",
     position: "",
+    password: "",
+    role: "EMPLOYEE",
+    photoUrl: "",
   });
 
   const [file, setFile] = useState<File | null>(null);
@@ -80,24 +70,30 @@ export default function Register() {
     return publicUrl.publicUrl;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      let photoUrl = null;
+      let photoUrl;
+
       if (file) {
-        photoUrl = await uploadImage();
+        const uploadedUrl = await uploadImage();
+        photoUrl = uploadedUrl ?? "";
       }
 
       await register({ ...form, photoUrl });
+
       toast.success(`Karyawan ${form.name} berhasil didaftarkan!`, {
-        icon: "🎉",
         style: { borderRadius: "1rem", fontWeight: "bold" },
       });
-      navigate("/admin"); // Kembali ke dashboard setelah sukses
+      navigate("/admin");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Registrasi gagal");
+      const errorMsg = Array.isArray(err?.response?.data?.message)
+        ? err?.response?.data?.message[0]
+        : err?.response?.data?.message;
+
+      toast.error(errorMsg || "Registrasi gagal");
     } finally {
       setLoading(false);
     }
@@ -138,11 +134,9 @@ export default function Register() {
           onSubmit={handleSubmit}
           className="flex flex-col lg:flex-row gap-10"
         >
-          {/* Left Panel: Profile Picture & Info (Wider on Desktop) */}
           <div className="lg:w-1/3 space-y-8">
             <div className="bg-white rounded-[2.5rem] shadow-sm p-10 border border-gray-100/50">
               <div className="text-center space-y-6">
-                {/* Avatar Upload Preview (Rapi dan Explicit) */}
                 <div className="relative inline-block group">
                   <div className="w-32 h-32 rounded-[2.5rem] bg-gray-50 border-2 border-dashed border-gray-200/70 flex items-center justify-center overflow-hidden group-hover:border-blue-300 transition-all">
                     {preview ? (
@@ -187,7 +181,6 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Right Panel: Form Fields (Wider & Spaced Out) */}
           <div className="lg:flex-1 space-y-8">
             <div className="bg-white rounded-[2.5rem] shadow-sm p-12 border border-gray-100/50">
               <h2 className="text-xl font-bold text-gray-800 mb-10 pb-4 border-b border-gray-100">
@@ -195,7 +188,6 @@ export default function Register() {
               </h2>
 
               <div className="space-y-8">
-                {/* Row 1: Name & Email */}
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider flex items-center gap-2">
@@ -226,12 +218,11 @@ export default function Register() {
                   </div>
                 </div>
 
-                {/* Row 2: Position & Phone */}
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider flex items-center gap-2">
                       <Phone size={12} className="text-blue-500" />
-                      Nomor Telepon (WhatsAppAktif)
+                      Nomor Telepon
                     </label>
                     <input
                       name="phone"
@@ -240,9 +231,34 @@ export default function Register() {
                       placeholder="Contoh: 0812XXXXXXXX"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider flex items-center gap-2">
+                      <Phone size={12} className="text-blue-500" />
+                      Posisi
+                    </label>
+                    <input
+                      name="position"
+                      onChange={handleChange}
+                      className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="Staff"
+                    />
+                  </div>
                 </div>
 
-                {/* Row 3: Password & Submit Button */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-gray-400 uppercase">
+                    Role
+                  </label>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold outline-none"
+                  >
+                    <option value="EMPLOYEE">EMPLOYEE</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-8 items-end pt-6 border-t border-gray-100 mt-10">
                   <div className="space-y-2">
                     <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider flex items-center gap-2">

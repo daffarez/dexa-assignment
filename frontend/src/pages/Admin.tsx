@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import { socket } from "../lib/socket";
 import { getUsers, updateUserByAdmin } from "../services/user";
 import { toast, Toaster } from "react-hot-toast";
-import { Bell, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProfileFromToken } from "../utils/auth";
 import { getUserAttendance } from "../services/attendance";
 import EmployeeTable from "../components/EmployeeTable";
 import LiveActivityFeed from "../components/LiveActivityFeed";
+import AttendanceHistoryModal from "../components/AttendanceHistoryModal";
+import EditEmployeeModal from "../components/EditEmployeeModal";
+import { supabase } from "../lib/supabase";
+import { deleteImageFromSupabase } from "../utils/supabase";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -22,64 +26,96 @@ export default function AdminDashboard() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    position: "",
     phone: "",
     role: "EMPLOYEE",
-    password: "", // Opsional untuk edit, wajib untuk tambah
+    password: "",
+    photoUrl: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleOpenEditModal = (emp: any) => {
     setEditingId(emp.id);
     setFormData({
       name: emp.name,
       email: emp.email,
+      position: emp.position,
       phone: emp.phone || "",
       role: emp.role,
       password: "",
+      photoUrl: emp.photoUrl,
     });
     setIsUserEditModalOpen(true);
   };
 
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingId) return;
+    setLoading(true);
 
     try {
-      const payload: any = {
-        name: formData.name,
-        phone: formData.phone,
-        role: formData.role,
-      };
+      const originalUser = employees.find((emp) => emp.id === editingId);
+      const initialPhotoUrl = originalUser?.photoUrl || "";
 
-      if (formData.password) {
-        payload.password = formData.password;
+      let finalPhotoUrl = formData.photoUrl;
+
+      if (selectedFile) {
+        if (initialPhotoUrl) {
+          await deleteImageFromSupabase(initialPhotoUrl);
+        }
+
+        const fileName = `avatar-${Date.now()}`;
+        const { data, error } = await supabase.storage
+          .from("profile-pictures")
+          .upload(fileName, selectedFile);
+
+        if (error) throw error;
+        const { data: publicUrl } = supabase.storage
+          .from("profile-pictures")
+          .getPublicUrl(data.path);
+        finalPhotoUrl = publicUrl.publicUrl;
+      } else if (formData.photoUrl === "" && initialPhotoUrl !== "") {
+        await deleteImageFromSupabase(initialPhotoUrl);
+        finalPhotoUrl = "";
       }
 
-      await updateUserByAdmin(editingId, payload);
+      if (editingId) {
+        const payload = {
+          ...formData,
+          photoUrl: finalPhotoUrl,
+        };
 
-      toast.success("Data karyawan berhasil diperbarui!");
+        await updateUserByAdmin(editingId, payload);
+      }
+
+      toast.success("Update Berhasil!");
+      fetchData();
       setIsUserEditModalOpen(false);
+    } catch (err: any) {
+      const errorMsg = Array.isArray(err?.response?.data?.message)
+        ? err?.response?.data?.message[0]
+        : err?.response?.data?.message;
 
+      toast.error(errorMsg || "Gagal memperbarui data karyawan");
+    } finally {
+      setLoading(false);
+      setSelectedFile(null);
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
       const res = await getUsers();
       setEmployees(res.data);
-
-      setEditingId(null);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Gagal update data");
+    } catch (err) {
+      toast.error("Gagal memuat data karyawan");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await getUsers();
-        setEmployees(res.data);
-      } catch (err) {
-        toast.error("Gagal memuat data karyawan");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
 
@@ -214,179 +250,21 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-      {isUserAttendanceModalOpen && selectedEmployee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-            {/* Modal Header */}
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <div className="flex items-center gap-4">
-                <img
-                  src={selectedEmployee.photoUrl}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                  alt=""
-                />
-                <div>
-                  <h3 className="text-lg font-black text-gray-900">
-                    {selectedEmployee.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                    Riwayat Presensi (Read-Only)
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsUserAttendanceModalOpen(false)}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Modal Content - Table */}
-            <div className="max-h-[60vh] overflow-y-auto">
-              <table className="w-full text-left">
-                <thead className="sticky top-0 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest">
-                  <tr>
-                    <th className="px-8 py-4">Tanggal</th>
-                    <th className="px-8 py-4 text-center">Masuk</th>
-                    <th className="px-8 py-4 text-center">Pulang</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {/* Gunakan logic Grouping yang kita buat sebelumnya agar satu baris per hari */}
-                  {employeeAttendance.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="px-8 py-10 text-center text-gray-400 italic"
-                      >
-                        Belum ada riwayat absen.
-                      </td>
-                    </tr>
-                  ) : (
-                    // Map data groupedAttendance di sini
-                    employeeAttendance.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="px-8 py-4 text-sm font-bold text-gray-700">
-                          {item.date}
-                        </td>
-                        <td className="px-8 py-4 text-center text-sm font-black text-green-600">
-                          {item.masuk}
-                        </td>
-                        <td className="px-8 py-4 text-center text-sm font-black text-blue-600">
-                          {item.pulang}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-6 bg-gray-50 text-right">
-              <button
-                onClick={() => setIsUserAttendanceModalOpen(false)}
-                className="px-6 py-2 bg-gray-900 text-white rounded-xl font-bold text-sm"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {isUserEditModalOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in zoom-in duration-200">
-            <div className="mb-8">
-              <h3 className="text-2xl font-black text-gray-900 italic">
-                EDIT<span className="text-blue-600">KARYAWAN</span>
-              </h3>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-1">
-                ID: {editingId?.split("-")[0]}... • {formData.email}
-              </p>
-            </div>
-
-            <form className="space-y-5" onSubmit={handleUpdateUser}>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-                  Nama Lengkap
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-                    Hak Akses
-                  </label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
-                    }
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
-                  >
-                    <option value="EMPLOYEE">EMPLOYEE</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="Isi jika ganti"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-wider">
-                  Nomor Telepon
-                </label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div className="pt-6 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsUserEditModalOpen(false)}
-                  className="flex-1 px-6 py-4 bg-gray-100 text-gray-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
-                >
-                  Simpan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <AttendanceHistoryModal
+        isOpen={isUserAttendanceModalOpen}
+        onClose={() => setIsUserAttendanceModalOpen(false)}
+        employee={selectedEmployee}
+        attendanceData={employeeAttendance}
+      />
+      <EditEmployeeModal
+        isOpen={isUserEditModalOpen}
+        onClose={() => setIsUserEditModalOpen(false)}
+        onSubmit={handleUpdateUser}
+        formData={formData}
+        setFormData={setFormData}
+        editingId={editingId}
+        setSelectedFile={setSelectedFile}
+      />
     </div>
   );
 }

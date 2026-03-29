@@ -11,8 +11,9 @@ import {
   Lock,
   UserCircle,
   Loader2,
-  CheckCircle2,
+  Trash2,
 } from "lucide-react";
+import { getProfileFromToken } from "../utils/auth";
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -33,14 +34,23 @@ export default function EditProfile() {
   }>({ type: null, msg: "" });
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    setForm({
-      name: user.name || "",
-      phone: user.phone || "",
-      position: user.position || "",
-      password: "",
-    });
-    setPreview(user.photoUrl || "");
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const decoded = getProfileFromToken(token);
+
+        setForm({
+          name: decoded.name || "",
+          phone: decoded.phone || "",
+          position: decoded.position || "",
+          password: "",
+        });
+        setPreview(decoded.photoUrl || "");
+      } catch (error) {
+        console.error("TInvalid token:", error);
+      }
+    }
   }, []);
 
   const handleChange = (e: any) => {
@@ -52,6 +62,11 @@ export default function EditProfile() {
     if (!selected) return;
     setFile(selected);
     setPreview(URL.createObjectURL(selected));
+  };
+
+  const handleRemovePhoto = () => {
+    setFile(null);
+    setPreview("");
   };
 
   const uploadImage = async () => {
@@ -76,6 +91,7 @@ export default function EditProfile() {
 
     try {
       let finalPhotoUrl = preview;
+
       if (file) {
         const uploadedUrl = await uploadImage();
         if (uploadedUrl) finalPhotoUrl = uploadedUrl;
@@ -92,8 +108,13 @@ export default function EditProfile() {
 
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
       const updatedUser = { ...currentUser, ...response.data };
-
       localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      setForm((prev: any) => ({
+        ...prev,
+        ...response.data,
+        password: "",
+      }));
 
       setStatus({ type: "success", msg: "Profil berhasil diperbarui!" });
       setTimeout(() => navigate("/dashboard"), 1500);
@@ -110,7 +131,6 @@ export default function EditProfile() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-12">
       <div className="max-w-7xl mx-auto">
-        {/* Navigasi Atas */}
         <div className="flex justify-between items-center mb-8">
           <button
             onClick={() => navigate("/dashboard")}
@@ -124,11 +144,10 @@ export default function EditProfile() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* KOLOM KIRI: Profile Card */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center text-center">
               <div className="relative group mb-6">
-                <div className="w-40 h-40 rounded-full border-8 border-gray-50 shadow-inner overflow-hidden bg-gray-100">
+                <div className="w-40 h-40 rounded-full border-8 border-gray-50 shadow-inner overflow-hidden bg-gray-100 flex items-center justify-center">
                   {preview ? (
                     <img
                       src={preview}
@@ -136,49 +155,48 @@ export default function EditProfile() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                      <User size={60} />
-                    </div>
+                    <User size={60} className="text-gray-300" />
                   )}
                 </div>
-                <label className="absolute bottom-2 right-2 bg-blue-600 text-white p-3 rounded-full border-4 border-white shadow-lg cursor-pointer hover:bg-blue-700 transition-all">
-                  <Camera size={20} />
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={handleFile}
-                    accept="image/*"
-                  />
-                </label>
+
+                <div className="absolute -bottom-2 right-2 flex flex-col gap-2">
+                  <label className="bg-blue-600 text-white p-3 rounded-full border-4 border-white shadow-lg cursor-pointer hover:bg-blue-700 transition-all">
+                    <Camera size={20} />
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={handleFile}
+                      accept="image/*"
+                    />
+                  </label>
+
+                  {preview && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="bg-red-500 text-white p-3 rounded-full border-4 border-white shadow-lg hover:bg-red-600 transition-all"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <h3 className="text-xl font-bold text-gray-900">{form.name}</h3>
               <p className="text-sm text-gray-500 font-medium mb-4">
                 {form.position}
               </p>
-
-              <div className="w-full pt-6 border-t border-gray-50">
-                <div className="flex items-center gap-3 text-xs text-gray-400 font-bold uppercase tracking-widest justify-center">
-                  <CheckCircle2 size={14} className="text-green-500" /> Profil
-                  Terverifikasi
-                </div>
-              </div>
             </div>
 
             {status.msg && (
               <div
-                className={`p-4 rounded-2xl border flex items-center gap-3 ${
-                  status.type === "success"
-                    ? "bg-green-50 border-green-100 text-green-700"
-                    : "bg-red-50 border-red-100 text-red-700"
-                }`}
+                className={`p-4 rounded-2xl border flex items-center gap-3 ${status.type === "success" ? "bg-green-50 border-green-100 text-green-700" : "bg-red-50 border-red-100 text-red-700"}`}
               >
                 <p className="text-sm font-bold">{status.msg}</p>
               </div>
             )}
           </div>
 
-          {/* KOLOM KANAN: Form */}
           <div className="lg:col-span-8">
             <form
               onSubmit={handleSubmit}
@@ -189,7 +207,6 @@ export default function EditProfile() {
                   Informasi Karyawan
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* NAMA (READ ONLY) */}
                   <div className="space-y-2 opacity-70">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                       Nama Lengkap
@@ -207,7 +224,6 @@ export default function EditProfile() {
                     </div>
                   </div>
 
-                  {/* WHATSAPP (EDITABLE) */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-blue-600">
                       Nomor WhatsApp
@@ -221,7 +237,7 @@ export default function EditProfile() {
                         name="phone"
                         value={form.phone}
                         onChange={handleChange}
-                        className="w-full pl-12 pr-4 py-3.5 bg-blue-50/30 border-2 border-blue-100 focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium outline-none"
+                        className="w-full pl-12 pr-4 py-3.5 bg-blue-50/30 border-2 border-blue-100 focus:bg-white focus:border-blue-500 rounded-xl font-medium outline-none"
                       />
                     </div>
                   </div>
@@ -233,7 +249,6 @@ export default function EditProfile() {
                   Keamanan
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* PASSWORD (EDITABLE) */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                       Ganti Password
@@ -249,7 +264,7 @@ export default function EditProfile() {
                         value={form.password}
                         onChange={handleChange}
                         placeholder="Isi untuk mengganti"
-                        className="w-full pl-12 pr-4 py-3.5 bg-blue-50/30 border-2 border-blue-100 focus:bg-white focus:border-blue-500 rounded-xl transition-all font-medium outline-none"
+                        className="w-full pl-12 pr-4 py-3.5 bg-blue-50/30 border-2 border-blue-100 focus:bg-white focus:border-blue-500 rounded-xl font-medium outline-none"
                       />
                     </div>
                   </div>
@@ -260,20 +275,20 @@ export default function EditProfile() {
                 <button
                   type="button"
                   onClick={() => navigate("/dashboard")}
-                  className="px-8 py-3.5 text-sm font-bold text-gray-500 hover:text-gray-900 transition-all"
+                  className="px-8 py-3.5 text-sm font-bold text-gray-500 hover:text-gray-900"
                 >
                   Batalkan
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-10 py-3.5 bg-black text-white rounded-xl font-bold flex items-center gap-3 hover:bg-gray-800 disabled:opacity-50 transition-all shadow-lg"
+                  className="px-10 py-3.5 bg-black text-white rounded-xl font-bold flex items-center gap-3 hover:bg-gray-800 disabled:opacity-50 shadow-lg"
                 >
                   {loading ? (
                     <Loader2 className="animate-spin" size={18} />
                   ) : (
                     <Save size={18} />
-                  )}
+                  )}{" "}
                   Simpan Perubahan
                 </button>
               </div>
