@@ -16,10 +16,12 @@ import { getProfileFromToken } from "../utils/auth";
 import { AvatarUpload } from "../components/AvatarUpload";
 import { FormInput } from "../components/FormInput";
 import { FormSelect } from "../components/FormSelect";
+import { useLoading } from "../context/LoadingContext";
 
 export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { setIsLoading } = useLoading();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -61,6 +63,7 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setIsLoading(true);
     try {
       let photoUrl = "";
       if (file) {
@@ -81,13 +84,13 @@ export default function Register() {
       toast.error(err?.response?.data?.message || "Registrasi gagal");
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] p-6 md:p-12 font-sans">
       <div className="max-w-7xl mx-auto space-y-10">
-        {/* Header Tetap Sama */}
         <div className="flex items-center justify-between pb-6 border-b border-gray-200/70">
           <div className="flex items-center gap-5">
             <button
@@ -144,7 +147,6 @@ export default function Register() {
                 placeholder="0812..."
                 onChange={(e) => setForm({ ...form, position: e.target.value })}
               />{" "}
-              {/* Opsional: tambahkan phone ke state form jika perlu */}
               <FormInput
                 label="Posisi"
                 icon={<UserPlus size={12} />}

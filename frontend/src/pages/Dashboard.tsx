@@ -188,7 +188,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] flex">
-      {/* CONTENT AREA */}
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">

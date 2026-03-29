@@ -18,13 +18,10 @@ export const LoadingProvider = ({
     <LoadingContext.Provider value={{ setIsLoading }}>
       {children}
 
-      {/* Overlay Global */}
       {isLoading && (
         <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-white/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="relative flex items-center justify-center">
-            {/* Outer Ring */}
             <div className="absolute w-20 h-20 border-4 border-blue-100 rounded-full"></div>
-            {/* Spinning Loader */}
             <Loader2
               className="w-10 h-10 text-blue-600 animate-spin"
               strokeWidth={2.5}

@@ -32,7 +32,7 @@ export default function ProfileCard({ user }: ProfileCardProps) {
 
       <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
       <p className="text-blue-600 font-bold text-xs mb-1 uppercase tracking-wider">
-        {user.position} {/* Menampilkan POSISI */}
+        {user.position}
       </p>
       <p className="text-gray-400 text-xs mb-4 font-medium">{user.email}</p>
 

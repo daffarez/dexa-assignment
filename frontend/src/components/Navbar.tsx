@@ -29,7 +29,6 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Brand Logo - Dexa Group */}
         <div
           className="flex items-center gap-2 cursor-pointer"
           onClick={() =>
@@ -40,13 +39,11 @@ export default function Navbar() {
             <span className="text-white font-black italic text-lg">D</span>
           </div>
           <h1 className="text-xl font-extrabold tracking-tighter text-black italic">
-            DEXA<span className="text-blue-600">GROUP</span>
+            PORTAL<span className="text-blue-600">KARYAWAN</span>
           </h1>
         </div>
 
-        {/* Navigation - Gabungan Sidebar ke Navbar */}
         <div className="hidden md:flex items-center bg-gray-50 p-1 rounded-2xl border border-gray-100">
-          {/* Menu Karyawan */}
           <button
             onClick={() => navigate("/dashboard?tab=PROFILE")}
             className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
@@ -71,7 +68,6 @@ export default function Navbar() {
             <Calendar size={14} /> Riwayat
           </button>
 
-          {/* Menu Admin - Purple Style sesuai Sidebar Mas */}
           {user.role === "ADMIN" && (
             <button
               onClick={() => navigate("/admin")}
@@ -86,7 +82,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* User Profile & Logout */}
         <div className="flex items-center gap-4">
           <div className="hidden sm:block text-right">
             <p className="text-xs font-bold text-gray-900">{user.name}</p>

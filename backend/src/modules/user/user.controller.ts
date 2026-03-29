@@ -16,12 +16,6 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getMe(@Req() req: RequestWithUser) {
-    return this.usersService.findById(req.user.sub);
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Patch('profile')
   updateMe(@Req() req: RequestWithUser, @Body() body: UpdateProfilePayload) {
     const parsedPayload = validatePayload(UpdateProfileSchema, body);

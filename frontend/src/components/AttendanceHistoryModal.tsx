@@ -29,7 +29,6 @@ export default function AttendanceHistoryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-        {/* Modal Header */}
         <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
@@ -61,8 +60,7 @@ export default function AttendanceHistoryModal({
             <X size={20} />
           </button>
         </div>
-
-        {/* Modal Content - Table */}
+        
         <div className="max-h-[60vh] overflow-y-auto">
           <table className="w-full text-left">
             <thead className="sticky top-0 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest">
@@ -104,7 +102,6 @@ export default function AttendanceHistoryModal({
           </table>
         </div>
 
-        {/* Modal Footer */}
         <div className="p-6 bg-gray-50 text-right">
           <button
             onClick={onClose}

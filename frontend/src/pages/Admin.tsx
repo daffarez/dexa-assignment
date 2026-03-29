@@ -217,14 +217,13 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 p-6 md:p-10">
       <Toaster />
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* HEADER & SUMMARY */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
               Aplikasi Monitoring Karyawan
             </h1>
             <p className="text-gray-500 text-sm">
-              Kelola data dan pantau aktivitas profil karyawan.
+              Kelola data dan pantau aktivitas karyawan.
             </p>
           </div>
           <button
