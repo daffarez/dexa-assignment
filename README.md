@@ -16,4 +16,7 @@ Tech Stack: React.js (Vite), TypeScript, Tailwind CSS
 
 ## Panduan Menjalankan Project
 
-Untuk menjalankan project ini secara lokal, silakan ikuti panduan di masing-masing folder
+Untuk menjalankan project ini secara lokal, silakan ikuti panduan di masing-masing folder:
+
+- [Backend](https://github.com/daffarez/dexa-assignment/blob/master/backend/README.md)
+- [Frontend](https://github.com/daffarez/dexa-assignment/blob/master/frontend/README.md)
