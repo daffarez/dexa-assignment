@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { updateProfile } from "../services/user";
-import { supabase } from "../lib/supabase";
 import {
   User,
   Camera,
@@ -107,7 +106,7 @@ export default function EditProfile() {
       }));
 
       setStatus({ type: "success", msg: "Profil berhasil diperbarui!" });
-      setTimeout(() => navigate("/dashboard"), 1500);
+      setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err: any) {
       setStatus({
         type: "error",

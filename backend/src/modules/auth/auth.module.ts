@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     PassportModule,
     JwtModule.register({
+      global: true,
       secret: 'SECRET_KEY',
       signOptions: { expiresIn: '1d' },
     }),

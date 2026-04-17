@@ -4,7 +4,6 @@ import {
   Get,
   UseGuards,
   Req,
-  Body,
   Param,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
@@ -18,19 +17,19 @@ export class AttendanceController {
   @UseGuards(JwtAuthGuard)
   @Post('check-in')
   checkIn(@Req() req: RequestWithUser) {
-    return this.attendanceService.checkIn(req.user.sub);
+    return this.attendanceService.checkIn(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('check-out')
   checkOut(@Req() req: RequestWithUser) {
-    return this.attendanceService.checkOut(req.user.sub);
+    return this.attendanceService.checkOut(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getMyAttendance(@Req() req: RequestWithUser) {
-    return this.attendanceService.getUserAttendance(req.user.sub);
+    return this.attendanceService.getUserAttendance(req.user.id);
   }
 
   @Get('user/:userId')

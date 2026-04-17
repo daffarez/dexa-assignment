@@ -19,7 +19,7 @@ export class UsersController {
   @Patch('profile')
   updateMe(@Req() req: RequestWithUser, @Body() body: UpdateProfilePayload) {
     const parsedPayload = validatePayload(UpdateProfileSchema, body);
-    return this.usersService.updateProfile(req.user.sub, parsedPayload);
+    return this.usersService.updateProfile(req.user.id, parsedPayload);
   }
 
   @Patch(':id')
